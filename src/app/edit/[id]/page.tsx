@@ -25,6 +25,7 @@ export default function EditBlogPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+
   useEffect(() => {
     const fetchPost = async () => {
       if (!id) {
@@ -51,8 +52,8 @@ export default function EditBlogPage() {
     fetchPost()
   }, [id, router])
 
+
   useEffect(() => {
-    
     if (newImageFile) {
       const reader = new FileReader()
       reader.onloadend = () => {
@@ -64,11 +65,12 @@ export default function EditBlogPage() {
     }
   }, [newImageFile])
 
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!post || !id) return
-    
+
     setError('')
     setLoading(true)
 
@@ -77,14 +79,9 @@ export default function EditBlogPage() {
 
      
       if (newImageFile) {
-        const result = await Backendless.Files.upload(
-          newImageFile, 
-          'blog-images',
-          true
-        )
+        const result = await Backendless.Files.upload(newImageFile, 'blog-images', true)
         imageUrl = result.fileURL
-        
-    
+
         if (post.image && post.image !== imageUrl) {
           try {
             await Backendless.Files.remove(post.image)
@@ -94,13 +91,13 @@ export default function EditBlogPage() {
         }
       }
 
-   
-      const updatedPost = await Backendless.Data.of('Posts').save<BlogPost>({
+      
+      await Backendless.Data.of('Posts').save<BlogPost>({
         objectId: id,
         title: post.title,
         content: post.content,
         image: imageUrl,
-        updated: new Date().getTime() 
+        updated: new Date().getTime()
       })
 
       router.push('/dashboard')
@@ -111,12 +108,12 @@ export default function EditBlogPage() {
     }
   }
 
+  
   const handleDelete = async () => {
     if (!post || !id) return
     if (!confirm('Yakin ingin menghapus postingan ini?')) return
 
     try {
-      
       if (post.image) {
         try {
           await Backendless.Files.remove(post.image)
@@ -140,6 +137,7 @@ export default function EditBlogPage() {
     })
   }
 
+  
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
@@ -148,12 +146,13 @@ export default function EditBlogPage() {
     )
   }
 
+
   if (!post) {
     return (
       <div className="max-w-2xl mx-auto mt-10 p-6">
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
           <p>{error || 'Postingan tidak ditemukan'}</p>
-          <button 
+          <button
             onClick={() => router.push('/dashboard')}
             className="mt-2 text-blue-600 hover:underline"
           >
@@ -164,6 +163,7 @@ export default function EditBlogPage() {
     )
   }
 
+  
   return (
     <div className="max-w-2xl mx-auto mt-6 p-6 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-6">
@@ -213,10 +213,7 @@ export default function EditBlogPage() {
         </div>
 
         <div>
-          <label className="block font-medium mb-2">
-            Gambar
-          </label>
-          
+          <label className="block font-medium mb-2">Gambar</label>
           {(post.image || previewImage) && (
             <div className="mb-4">
               <div className="relative w-full h-64 rounded-md overflow-hidden border">
