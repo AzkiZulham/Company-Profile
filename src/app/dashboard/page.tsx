@@ -19,7 +19,6 @@ export default function DashboardPage() {
   const router = useRouter()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
-  const [userId, setUserId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [dateMap, setDateMap] = useState<{ [id: string]: string }>({})
 
@@ -32,15 +31,12 @@ export default function DashboardPage() {
       return
     }
 
-    setUserId(uid)
-
     const fetchPosts = async () => {
       try {
         const queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause(`ownerId = '${uid}'`)
         const result = await Backendless.Data.of('Posts').find<Post>(queryBuilder)
         setPosts(result)
 
-        
         const map: { [id: string]: string } = {}
         result.forEach(post => {
           map[post.objectId] = post.created
@@ -63,7 +59,7 @@ export default function DashboardPage() {
 
     try {
       await Backendless.Data.of('Posts').remove(id)
-      setPosts(posts.filter(p => p.objectId !== id))
+      setPosts(prev => prev.filter(p => p.objectId !== id))
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Gagal menghapus postingan')
     }
@@ -74,6 +70,10 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Dashboard</h1>
       </div>
+
+      {error && (
+        <p className="text-red-500 mb-4">{error}</p>
+      )}
 
       {loading ? (
         <p>Memuat data postingan...</p>
