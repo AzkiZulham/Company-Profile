@@ -1,16 +1,19 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { redirect } from 'next/navigation';
+import { useEffect } from 'react'
 
 export default function ReservasiPage() {
   useEffect(() => {
-    window.location.href = 'https://api.whatsapp.com/send?phone=6287783333870&text=Hallo%20kami%20dengan%20Aleena%20trans%20ada%20yang%20bisa%20saya%20bantu%20untuk%20kebutuhan%20kendaraannya';
-  }, []);
+    const whatsappNumber = '6287783333870'
+    const message = 'Hallo kami dengan Aleena Trans, ada yang bisa saya bantu untuk kebutuhan kendaraannya?'
+    const encodedMessage = encodeURIComponent(message)
+
+    window.location.href = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`
+  }, [])
 
   return (
     <div className="flex justify-center items-center h-screen text-center">
       <p className="text-gray-600 text-lg">Mengalihkan ke WhatsApp...</p>
     </div>
-  );
+  )
 }
