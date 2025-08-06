@@ -1,11 +1,11 @@
 'use client'
 
-import { Formik, Form, Field, ErrorMessage } from 'formik'
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Backendless from '@/lib/backendless'
-import { Eye, EyeOff } from 'lucide-react' 
+import Link from 'next/link'
 
 interface FormValues {
   email: string
@@ -15,7 +15,6 @@ interface FormValues {
 export default function RegisterPage() {
   const router = useRouter()
   const [error, setError] = useState<string>('')
-  const [showPassword, setShowPassword] = useState(false)
 
   const initialValues: FormValues = {
     email: '',
@@ -23,17 +22,28 @@ export default function RegisterPage() {
   }
 
   const validationSchema = Yup.object({
-    email: Yup.string().email('Email tidak valid').required('Email wajib diisi'),
-    password: Yup.string().min(6, 'Minimal 6 karakter').required('Password wajib diisi'),
+    email: Yup.string()
+      .email('Email tidak valid')
+      .required('Email wajib diisi'),
+    password: Yup.string()
+      .required('Password wajib diisi')
+      .min(6, 'Password minimal 6 karakter'),
   })
 
-  const handleSubmit = async (values: FormValues, { setSubmitting }: any) => {
+  const handleSubmit = async (
+    values: FormValues,
+    { setSubmitting }: FormikHelpers<FormValues>
+  ) => {
     setError('')
     try {
       await Backendless.UserService.register(values)
       router.push('/login')
-    } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan saat mendaftar')
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Terjadi kesalahan saat mendaftar'
+      setError(errorMessage)
     } finally {
       setSubmitting(false)
     }
@@ -41,10 +51,12 @@ export default function RegisterPage() {
 
   return (
     <div className="bg-white p-6 rounded shadow-md max-w-md mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-4 text-center">Daftar Akun</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">Daftar</h1>
 
       {error && (
-        <div className="bg-red-100 text-red-600 p-2 rounded mb-4">{error}</div>
+        <div className="bg-red-100 text-red-600 p-2 rounded mb-4 text-center">
+          {error}
+        </div>
       )}
 
       <Formik
@@ -52,70 +64,68 @@ export default function RegisterPage() {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ isSubmitting }) => (
+        {({ isSubmitting, isValid }) => (
           <Form className="space-y-4">
             <div>
-              <label htmlFor="email" className="block font-medium mb-1">
+              <label htmlFor="email" className="block font-semibold mb-1">
                 Email
               </label>
               <Field
-                name="email"
                 type="email"
-                className="w-full border px-3 py-2 rounded"
+                name="email"
+                className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoComplete="username"
               />
               <ErrorMessage
                 name="email"
                 component="div"
-                className="text-sm text-red-500"
+                className="text-red-500 text-sm mt-1"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block font-medium mb-1">
+              <label htmlFor="password" className="block font-semibold mb-1">
                 Password
               </label>
-              <div className="relative">
-                <Field
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  className="w-full border px-3 py-2 rounded pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
+              <Field
+                type="password"
+                name="password"
+                className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoComplete="new-password"
+              />
               <ErrorMessage
                 name="password"
                 component="div"
-                className="text-sm text-red-500"
+                className="text-red-500 text-sm mt-1"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-60"
-            >
-              {isSubmitting ? 'Mendaftarkan...' : 'Daftar'}
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting || !isValid}
+                className={`w-full py-2 rounded text-white transition-colors ${
+                  isSubmitting || !isValid
+                    ? 'bg-blue-400 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {isSubmitting ? 'Memproses...' : 'Daftar'}
+              </button>
+            </div>
           </Form>
         )}
       </Formik>
 
-      <p className="text-sm text-center mt-4">
+      <div className="mt-4 text-center text-sm text-gray-600">
         Sudah punya akun?{' '}
-        <span
-          className="text-blue-600 hover:underline cursor-pointer"
-          onClick={() => router.push('/login')}
+        <Link
+          href="/login"
+          className="text-blue-600 hover:underline font-medium"
         >
-          Login
-        </span>
-      </p>
+          Masuk sekarang
+        </Link>
+      </div>
     </div>
   )
 }
